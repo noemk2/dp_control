@@ -1,6 +1,5 @@
 {
   "name": "dp_control",
-  "homepage": "https://noemk2.github.io/dp_control/",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
