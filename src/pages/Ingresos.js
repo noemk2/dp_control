@@ -130,13 +130,11 @@ export default function Ingresos() {
         const obtener = posts_gastos_otros.filter(
           (e) => e.mes === new_mes.toLowerCase()
         );
-        setIngreso_gasto_otro(obtener);
-        console.log(ingreso_gasto_otro);
-        return;
-
         if (obtener[0] === {}) {
           return;
         }
+        setIngreso_gasto_otro(obtener);
+        return;
       }
     };
 
@@ -182,8 +180,11 @@ export default function Ingresos() {
         .reduce((a, c) => a + c);
       setTotal_gastos(new_gasto + otros_gastos);
       return;
-    } else {
-      setTotal_gastos(0);
+    }
+    if (ingreso_gasto_otro[0] === undefined && ingreso_gasto[0] !== undefined) {
+      const new_gasto = ingreso_gasto.reduce((a, b) => a + b);
+      setTotal_gastos(new_gasto);
+      return;
     }
   }, [ingreso_gasto, ingreso_gasto_otro]);
   //

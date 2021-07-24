@@ -192,8 +192,11 @@ export default function Ingresos_op() {
         .reduce((a, c) => a + c);
       setTotal_gastos(new_gasto + otros_gastos);
       return;
-    } else {
-      setTotal_gastos(0);
+    }
+    if (ingreso_gasto_otro[0] === undefined && ingreso_gasto[0] !== undefined) {
+      const new_gasto = ingreso_gasto.reduce((a, b) => a + b);
+      setTotal_gastos(new_gasto);
+      return;
     }
   }, [ingreso_gasto, ingreso_gasto_otro]);
 
