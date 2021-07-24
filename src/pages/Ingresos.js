@@ -97,9 +97,10 @@ export default function Ingresos() {
         .reduce((a, b) => parseInt(a) + parseInt(b));
       return suma;
     };
+    //
     const get_resultado = (mes = new_mes.toLowerCase()) => {
       const pisos_total = [];
-      if (posts[0]) {
+      if (posts[0] !== undefined) {
         const _my_array = posts.map((e) => e[mes].monto);
         pisos_total.push(suma_pisos(_my_array, 0, 4));
         pisos_total.push(suma_pisos(_my_array, 5, 9));
@@ -112,9 +113,9 @@ export default function Ingresos() {
         console.log("esperando... ");
       }
     };
-
+    //
     const get_resultado_gasto = (mes = new_mes.toLowerCase()) => {
-      if (posts_gastos[0]) {
+      if (posts_gastos[0] !== undefined) {
         const obtener = posts_gastos.map((e) => e[mes]);
         const por_mes = obtener.map((e) => (e === undefined ? 0 : e.monto));
         setIngreso_gasto(por_mes);
@@ -125,12 +126,17 @@ export default function Ingresos() {
     };
 
     const get_resultado_gasto_otros = () => {
-      if (posts_gastos_otros[0]) {
+      if (posts_gastos_otros[0] !== undefined) {
         const obtener = posts_gastos_otros.filter(
           (e) => e.mes === new_mes.toLowerCase()
         );
         setIngreso_gasto_otro(obtener);
+        console.log(ingreso_gasto_otro);
         return;
+
+        if (obtener[0] === {}) {
+          return;
+        }
       }
     };
 
@@ -156,23 +162,34 @@ export default function Ingresos() {
     get_resultado_gasto_otros();
     get_resultado_saldo();
   }, [_meses, new_mes, posts, posts_gastos, posts_saldo, posts_gastos_otros]);
-
-  useEffect(() => {
-    setTotal_pisos(
-      ingreso_pisos[0] ? ingreso_pisos.reduce((a, b) => a + b) : 0
-    );
-    setTotal_gastos(
-      ingreso_gasto[0] && ingreso_gasto_otro[0]
-        ? ingreso_gasto.reduce((a, b) => a + b) +
-            ingreso_gasto_otro.map((e) => e.monto).reduce((a, c) => a + c)
-        : 0
-    );
-  }, [ingreso_gasto, ingreso_pisos, ingreso_gasto_otro]);
-
+  //
   useEffect(() => {
     getdb();
   }, []);
-
+  //
+  useEffect(() => {
+    if (ingreso_pisos[0] !== undefined) {
+      setTotal_pisos(ingreso_pisos.reduce((a, b) => a + b));
+      return;
+    }
+  }, [ingreso_pisos]);
+  //
+  useEffect(() => {
+    if (ingreso_gasto_otro[0] !== undefined && ingreso_gasto[0] !== undefined) {
+      const new_gasto = ingreso_gasto.reduce((a, b) => a + b);
+      const otros_gastos = ingreso_gasto_otro
+        .map((e) => e.monto)
+        .reduce((a, c) => a + c);
+      setTotal_gastos(new_gasto + otros_gastos);
+      return;
+    } else {
+      setTotal_gastos(0);
+    }
+  }, [ingreso_gasto, ingreso_gasto_otro]);
+  //
+  //console.log(total_gastos);
+  //console.log(ingreso_gasto);
+  //console.log(ingreso_gasto_otro);
   return (
     <>
       <BarraPublica />

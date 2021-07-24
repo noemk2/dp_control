@@ -42,7 +42,6 @@ export default function Ingresos_op() {
   const [new_mes, setNew_mes] = useState(_meses[_new_date]);
 
   const handleInputChange = (e) => {
-    //console.log(e.target.id);
     if (e.target.value === "") {
       setNew_mes(_meses[_new_date]); // seleccion del input
     } else {
@@ -112,7 +111,7 @@ export default function Ingresos_op() {
     //
     const get_resultado = (mes = new_mes.toLowerCase()) => {
       const pisos_total = [];
-      if (posts[0]) {
+      if (posts[0] !== undefined) {
         const _my_array = posts.map((e) => e[mes].monto);
         pisos_total.push(suma_pisos(_my_array, 0, 4));
         pisos_total.push(suma_pisos(_my_array, 5, 9));
@@ -127,7 +126,7 @@ export default function Ingresos_op() {
     };
     //
     const get_resultado_gasto = (mes = new_mes.toLowerCase()) => {
-      if (posts_gastos[0]) {
+      if (posts_gastos[0] !== undefined) {
         const obtener = posts_gastos.map((e) => e[mes]);
         const por_mes = obtener.map((e) => (e === undefined ? 0 : e.monto));
         setIngreso_gasto(por_mes);
@@ -138,10 +137,13 @@ export default function Ingresos_op() {
     };
     //
     const get_resultado_gasto_otros = () => {
-      if (posts_gastos_otros[0]) {
+      if (posts_gastos_otros[0] !== undefined) {
         const obtener = posts_gastos_otros.filter(
           (e) => e.mes === new_mes.toLowerCase()
         );
+        if (obtener[0] === {}) {
+          return;
+        }
         setIngreso_gasto_otro(obtener);
         return;
       }
@@ -175,16 +177,25 @@ export default function Ingresos_op() {
   }, []);
 
   useEffect(() => {
-    setTotal_pisos(
-      ingreso_pisos[0] ? ingreso_pisos.reduce((a, b) => a + b) : 0
-    );
-    setTotal_gastos(
-      ingreso_gasto[0] && ingreso_gasto_otro[0]
-        ? ingreso_gasto.reduce((a, b) => a + b) +
-            ingreso_gasto_otro.map((e) => e.monto).reduce((a, c) => a + c)
-        : 0
-    );
-  }, [ingreso_gasto, ingreso_pisos, ingreso_gasto_otro]);
+    if (ingreso_pisos[0] !== undefined) {
+      setTotal_pisos(ingreso_pisos.reduce((a, b) => a + b));
+      return;
+    }
+  }, [ingreso_pisos]);
+  //
+
+  useEffect(() => {
+    if (ingreso_gasto_otro[0] !== undefined && ingreso_gasto[0] !== undefined) {
+      const new_gasto = ingreso_gasto.reduce((a, b) => a + b);
+      const otros_gastos = ingreso_gasto_otro
+        .map((e) => e.monto)
+        .reduce((a, c) => a + c);
+      setTotal_gastos(new_gasto + otros_gastos);
+      return;
+    } else {
+      setTotal_gastos(0);
+    }
+  }, [ingreso_gasto, ingreso_gasto_otro]);
 
   return (
     <>
@@ -347,7 +358,6 @@ export default function Ingresos_op() {
                           {saldo_anterior === undefined || saldo_anterior === 0
                             ? "Regresa al mes anterior "
                             : saldo_anterior}
-                          {console.log(saldo_anterior)}
                         </td>
                       </tr>
                       <tr>
