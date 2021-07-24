@@ -132,13 +132,6 @@ export default function Ingresos_egresos() {
     //setMeses(_meses);
   }, []);
 
-  useEffect(() => {
-    setValues({
-      //...values,
-      fecha: _value,
-    });
-  }, [_value]);
-
   return (
     <>
       <BarraPrivada />
@@ -265,7 +258,13 @@ export default function Ingresos_egresos() {
                           <DatePicker
                             name="fecha"
                             required={!requerido}
-                            onChange={onChange}
+                            onChange={(value) => {
+                              onChange(value);
+                              setValues({
+                                ...values,
+                                fecha: value,
+                              });
+                            }}
                             value={_value}
                             locale={"es-ES"}
                             className="d-flex mt-1"

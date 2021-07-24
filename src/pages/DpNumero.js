@@ -39,8 +39,6 @@ export default function DpNumero(props) {
     "Diciembre",
   ];
 
-  //const [meses, setMeses] = useState(_meses);
-
   const depart = Array(5)
     .fill()
     .map((_, i) => i + 101)
@@ -64,62 +62,46 @@ export default function DpNumero(props) {
         .fill()
         .map((_, i) => i + 501)
     );
-  //console.log(depart);
-
+  //
   const handleSubmit = (e) => {
+    const getupdate = async (numero_dp, mes, valor) => {
+      await db
+        .collection("departamentos")
+        .doc(numero_dp)
+        .update({
+          [mes]: valor,
+        });
+    };
     e.preventDefault();
 
-    //console.log(values);
-    //console.log(values.mes);
-    //console.log(_meses[values.fecha.getMonth()]);
-
-    //console.log(titulo);
     getupdate(titulo, values.mes, values);
   };
+  //
   const handle_titulo = (e) => {
     const { value } = e.target;
-    //props.match.params.id = value;
-    //console.log(value);
 
     setTitulo(value);
   };
-
+  //
   const handleInputChange = (e) => {
-    //console.log(e.target.value);
     const { name, value, id } = e.target;
-    //console.log(e.target.id);
-    console.log(name, value === "on" ? new Date() : value);
-
+    //console.log(name, value === "on" ? new Date() : value);
     id === "alerta1" && setPosicion(true);
     id === "alerta2" && setPosicion(false);
-
     setValues({
       ...values,
       [name]: value === "on" ? new Date() : value,
       estado: true,
     });
   };
-
-  const getupdate = async (numero_dp, mes, valor) => {
-    await db
-      .collection("departamentos")
-      .doc(numero_dp)
-      .update({
-        [mes]: valor,
-      });
-  };
+  //
 
   useEffect(() => {
     setTitulo(props.match.params.id);
     //setMeses(_meses);
   }, [props]);
 
-  useEffect(() => {
-    setValues({
-      //...values,
-      fecha: _value,
-    });
-  }, [_value]);
+  useEffect(() => {}, [_value]);
 
   return (
     <>
@@ -239,7 +221,13 @@ export default function DpNumero(props) {
                           <DatePicker
                             name="fecha"
                             required={!requerido}
-                            onChange={onChange}
+                            onChange={(value) => {
+                              onChange(value);
+                              setValues({
+                                ...values,
+                                fecha: value,
+                              });
+                            }}
                             value={_value}
                             locale={"es-ES"}
                             className="d-flex mt-1"
