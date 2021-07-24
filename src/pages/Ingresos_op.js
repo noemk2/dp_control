@@ -22,6 +22,9 @@ export default function Ingresos_op() {
   const [saldo_anterior, setSaldo_anterior] = useState(0);
   const [saldo_next, setSaldo_next] = useState(0);
 
+  const [total_pisos, setTotal_pisos] = useState(0);
+  const [total_gastos, setTotal_gastos] = useState(0);
+
   const [_meses] = useState([
     "Enero",
     "Febrero",
@@ -38,37 +41,14 @@ export default function Ingresos_op() {
   ]);
   const [new_mes, setNew_mes] = useState(_meses[_new_date]);
 
-  //const fecha_boleta = new_mes == "" ? _meses[_new_date] : new_mes;
-
-  //const ingresos_por_pisos =
-  //ingreso_pisos === [] ? get_resultado() : ingreso_pisos;
-
   const handleInputChange = (e) => {
     //console.log(e.target.id);
     if (e.target.value === "") {
       setNew_mes(_meses[_new_date]); // seleccion del input
-      //console.log("se ejecuta el vacio");
     } else {
       setNew_mes(e.target.value); // seleccion del input
     }
-    //console.log(e.target.value);
-    //console.log(e.target.value);
   };
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    getupdate(
-      saldo_anterior + ingreso_pisos[0]
-        ? ingreso_pisos.reduce((a, b) => a + b)
-        : 0 - ingreso_gasto[0] && ingreso_gasto_otro[0]
-        ? ingreso_gasto.reduce((a, b) => a + b) +
-          ingreso_gasto_otro.map((e) => e.monto).reduce((a, c) => a + c)
-        : 0
-    );
-
-    //get_resultado_saldo();
-    getdb();
-  };
-
   const getupdate = async (total) => {
     const mes_next =
       _meses[_meses.findIndex((e) => e === new_mes) + 1].toLowerCase();
@@ -76,6 +56,12 @@ export default function Ingresos_op() {
     await db.collection("saldos").doc(mes_next).set({
       monto: total,
     });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    getupdate(total_pisos - total_gastos + saldo_anterior);
+    getdb();
   };
 
   const getdb = async () => {
@@ -117,7 +103,6 @@ export default function Ingresos_op() {
   };
 
   useEffect(() => {
-    //setIngreso_pisos(get_resultado(fecha_boleta.toLowerCase()));
     const suma_pisos = (a, i, f) => {
       const suma = a
         .slice(i, f) // 5, 9, 10, 14, 15, 19, 20, 25
@@ -135,13 +120,12 @@ export default function Ingresos_op() {
         pisos_total.push(suma_pisos(_my_array, 15, 19));
         pisos_total.push(suma_pisos(_my_array, 20, 24));
 
-        //console.log(pisos_total);
         return setIngreso_pisos(pisos_total);
       } else {
         console.log("esperando... ");
       }
     };
-
+    //
     const get_resultado_gasto = (mes = new_mes.toLowerCase()) => {
       if (posts_gastos[0]) {
         const obtener = posts_gastos.map((e) => e[mes]);
@@ -152,29 +136,31 @@ export default function Ingresos_op() {
         console.log("esperando... ");
       }
     };
-    const get_resultado_gasto_otros = (mes = new_mes.toLowerCase()) => {
+    //
+    const get_resultado_gasto_otros = () => {
       if (posts_gastos_otros[0]) {
-        const obtener = posts_gastos_otros.filter((e) => e.mes === [mes]);
+        const obtener = posts_gastos_otros.filter(
+          (e) => e.mes === new_mes.toLowerCase()
+        );
         setIngreso_gasto_otro(obtener);
         return;
       }
     };
-
-    const get_resultado_saldo = (mes = new_mes.toLowerCase()) => {
+    //
+    const get_resultado_saldo = () => {
       if (posts_saldo[0]) {
         const mes_next =
           _meses[_meses.findIndex((e) => e === new_mes) + 1].toLowerCase();
 
-        const obtener = posts_saldo.filter((a) => a.id === [mes]);
+        const obtener = posts_saldo.filter(
+          (a) => a.id === new_mes.toLowerCase()
+        );
         obtener[0] ? setSaldo_anterior(obtener[0].monto) : setSaldo_anterior(0);
 
         const obtener_next = posts_saldo.filter((a) => a.id === mes_next);
         obtener_next[0]
           ? setSaldo_next(obtener_next[0].monto)
           : setSaldo_next(0);
-        //console.log(mes_next);
-        //console.log(saldo_next);
-
         return;
       }
     };
@@ -182,62 +168,24 @@ export default function Ingresos_op() {
     get_resultado_gasto();
     get_resultado_gasto_otros();
     get_resultado_saldo();
-    //console.log(ingreso_gasto);
-    //console.log(posts_gastos.map((e) => e.julio));
-    //console.log("esto se ejecuta");
-    //console.log("esto se ejecuta");
-    //console.log(ingresos_por_pisos);
-  }, [
-    new_mes,
-    _meses,
-    posts,
-    posts_gastos,
-    posts_saldo,
-    posts_gastos_otros,
-    saldo_next,
-  ]);
+  }, [new_mes, _meses, posts, posts_gastos, posts_saldo, posts_gastos_otros]);
 
   useEffect(() => {
-    //const _new_date = ;
     getdb();
-    //getdb_gastos();
-    //setNew_mes(_meses[_new_date]);
-    //setNew_date(_meses[_new_date]);
-    //setNum_mes(new Date().getMonth());
-    //console.log(new_mes);
-    //console.log(_new_date, num_mes);
-
-    //setNew_mes(_meses[_new_date]);
   }, []);
 
   useEffect(() => {
-    if (posts[0]) {
-      //get_resultado();
-    }
-  }, [posts]);
+    setTotal_pisos(
+      ingreso_pisos[0] ? ingreso_pisos.reduce((a, b) => a + b) : 0
+    );
+    setTotal_gastos(
+      ingreso_gasto[0] && ingreso_gasto_otro[0]
+        ? ingreso_gasto.reduce((a, b) => a + b) +
+            ingreso_gasto_otro.map((e) => e.monto).reduce((a, c) => a + c)
+        : 0
+    );
+  }, [ingreso_gasto, ingreso_pisos, ingreso_gasto_otro]);
 
-  useEffect(() => {
-    if (posts_gastos[0]) {
-      //get_resultado_gasto();
-      //console.log(posts_gastos.map((e) => e.julio));
-      //console.log(ingreso_gasto);
-    }
-    //get_resultado();
-    //console.log(posts_gastos);
-  }, [posts_gastos]);
-
-  useEffect(() => {
-    if (posts_gastos_otros[0]) {
-      //console.log(posts_gastos_otros.filter((e) => e.mes == "enero"));
-      //get_resultado_gasto_otros();
-    }
-  }, [posts_gastos_otros]);
-
-  useEffect(() => {
-    if (posts_saldo[0]) {
-      //get_resultado_saldo();
-    }
-  }, [posts_saldo]);
   return (
     <>
       <BarraPrivada />
@@ -255,9 +203,7 @@ export default function Ingresos_op() {
 
               <div className="form-row align-items-center">
                 <div className="col-auto my-1">
-                  <label className="mr-sm-2" for="inlineFormCustomSelect">
-                    Elegir Mes:
-                  </label>
+                  <label className="mr-sm-2">Elegir Mes:</label>
                   <Form.Control
                     as="select"
                     className="me-sm-2"
@@ -318,11 +264,7 @@ export default function Ingresos_op() {
                       <tr>
                         <td></td>
                         <td className="text-center">TOTAL:</td>
-                        <td>
-                          {ingreso_pisos[0]
-                            ? ingreso_pisos.reduce((a, b) => a + b)
-                            : 0}
-                        </td>
+                        <td>{total_pisos}</td>
                       </tr>
                     </tbody>
                   </Table>
@@ -371,14 +313,7 @@ export default function Ingresos_op() {
                       <tr>
                         <td></td>
                         <td className="text-center">TOTAL:</td>
-                        <td>
-                          {ingreso_gasto[0] && ingreso_gasto_otro[0]
-                            ? ingreso_gasto.reduce((a, b) => a + b) +
-                              ingreso_gasto_otro
-                                .map((e) => e.monto)
-                                .reduce((a, c) => a + c)
-                            : 0}
-                        </td>
+                        <td>{total_gastos}</td>
                       </tr>
                     </tbody>
                   </Table>
@@ -408,23 +343,16 @@ export default function Ingresos_op() {
                       </tr>
                       <tr>
                         <td>SALDO ANTERIOR</td>
-
                         <td className="text-center">
                           {saldo_anterior === undefined || saldo_anterior === 0
                             ? "Regresa al mes anterior "
                             : saldo_anterior}
+                          {console.log(saldo_anterior)}
                         </td>
                       </tr>
                       <tr>
                         <td>TOTAL GASTOS</td>
-                        <td className="text-center">
-                          {ingreso_gasto[0] && ingreso_gasto_otro[0]
-                            ? ingreso_gasto.reduce((a, b) => a + b) +
-                              ingreso_gasto_otro
-                                .map((e) => e.monto)
-                                .reduce((a, c) => a + c)
-                            : 0}
-                        </td>
+                        <td className="text-center">{total_gastos}</td>
                       </tr>
                       <tr>
                         <td>SALDO PARA PROXIMO MES</td>
@@ -434,15 +362,9 @@ export default function Ingresos_op() {
                               <Form.Group as={Row} className="mb-3 ">
                                 <Col sm={{ span: 5, offset: 1 }}>
                                   <p>
-                                    {saldo_anterior + ingreso_pisos[0]
-                                      ? ingreso_pisos.reduce((a, b) => a + b)
-                                      : 0 - ingreso_gasto[0] &&
-                                        ingreso_gasto_otro[0]
-                                      ? ingreso_gasto.reduce((a, b) => a + b) +
-                                        ingreso_gasto_otro
-                                          .map((e) => e.monto)
-                                          .reduce((a, c) => a + c)
-                                      : 0}
+                                    {total_pisos -
+                                      total_gastos +
+                                      saldo_anterior}
                                   </p>
                                 </Col>
                                 <Col>
