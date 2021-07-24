@@ -110,9 +110,9 @@ export default function DpNumero(props) {
   };
 
   useEffect(() => {
-    //setTitulo(props.match.params.id);
+    setTitulo(props.match.params.id);
     //setMeses(_meses);
-  }, []);
+  }, [props]);
 
   useEffect(() => {
     setValues({
